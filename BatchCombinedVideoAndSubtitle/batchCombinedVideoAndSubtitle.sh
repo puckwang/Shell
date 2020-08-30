@@ -47,13 +47,24 @@ for ((i = 0; i <= ${#videoList[@]}; i++)); do
     fi
 
     echo "開始合併 '$(basename "${videoList[$i]}")' 與 '$(basename "${subtitleList[$i]}")'"
+    extension="${videoList[$i]##*.}"
 
-    if ! ffmpeg -i "${videoList[$i]}" -i "${subtitleList[$i]}" \
-        -metadata:s:s:0 language=chi -disposition:s:0 default \
-        -c:v copy -c:a copy -scodec copy \
-        "${targetDir}/output/$(basename "${videoList[$i]}")"; then
-        echo "執行失敗"
-        exit
+    if [[ "$extension" == "mp4" ]] || [[ "$extension" == "m4v" ]]; then
+        if ! ffmpeg -i "${videoList[$i]}" -i "${subtitleList[$i]}" \
+            -metadata:s:s:0 language=chi -disposition:s:0 default \
+            -c:s mov_text -c:v copy -c:a copy \
+            "${targetDir}/output/$(basename "${videoList[$i]}")"; then
+            echo "執行失敗"
+            exit
+        fi
+    else
+        if ! ffmpeg -i "${videoList[$i]}" -i "${subtitleList[$i]}" \
+            -metadata:s:s:0 language=chi -disposition:s:0 default \
+            -c:s mov_text -c:v copy -c:a copy -scodec copy \
+            "${targetDir}/output/$(basename "${videoList[$i]}")"; then
+            echo "執行失敗"
+            exit
+        fi
     fi
 done
 
